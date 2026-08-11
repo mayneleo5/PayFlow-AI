@@ -1,134 +1,158 @@
 # PayFlow AI
 
-**Autonomous treasury and payment automation platform built on Arc**
+**AI-assisted treasury and payment automation on Arc Testnet**
 
-PayFlow AI enables businesses, DAOs, and individuals to automate USDC payments, payroll, vendor settlements, and treasury management using AI agents on Circle’s stablecoin-native L1.
+PayFlow AI is a hackathon MVP for programmable USDC payments. It combines an Arc Testnet wallet dashboard with a browser-based agent interface and a Netlify serverless API for payment rules, treasury views, payroll simulation, and transaction data.
 
-Built for the **Encode Club × Arc Programmable Money Hackathon**  
-Tracks: **Agentic Economy** + **DeFi**
+Built for the **Encode Club × Arc Programmable Money Hackathon**.
 
----
+> **Testnet only. No real funds.**
 
 ## Live Demo
 
-🔗 **[https://payflow-2026.netlify.app](https://payflow-2026.netlify.app)**
+**https://payflow-2026.netlify.app**
 
-> Testnet only • No real funds
+## What is actually working
 
----
-
-## What Works Today (MVP Status)
-
-| Feature                              | Status          | Notes |
-|--------------------------------------|-----------------|-------|
-| Connect any EVM wallet to Arc Testnet | ✅ Working     | Auto-adds Arc network |
-| View live USDC balance               | ✅ Working     | Real balance from Arc |
-| Send USDC on Arc                     | ✅ Working     | Real on-chain transfers (gas paid in USDC) |
-| Dashboard & transaction history      | ✅ Working     | Mix of live + demo data |
-| Agent rule configuration UI          | ✅ Working     | Rules can be viewed and edited |
-| Agent API (for external AIs)         | ✅ Working     | Browser object + HTTP endpoints |
-| Autonomous agent execution           | 🟡 Simulated   | Full autonomy is the next phase |
-| Payroll / Revenue split / Treasury   | 🟡 Demo        | Logic exists, real triggers coming |
-
----
+| Capability | Status | Notes |
+|---|---|---|
+| EVM wallet connection | ✅ Live | Connects through `window.ethereum` and switches to Arc Testnet |
+| Live Arc balance | ✅ Live | Reads the connected wallet's native Arc balance (USDC is the native gas asset) |
+| USDC/native-asset transfer | ✅ Live | User signs the transaction in their wallet; transaction hash links to the explorer |
+| Dashboard | ✅ Live | Wallet state + product UI |
+| Browser Agent API | ✅ Live | `window.PayFlowAPI` exposes read/query operations and payroll simulation |
+| HTTP Agent API | ✅ Live | Netlify Function endpoints for demo/query workflows |
+| Payment rules | 🟡 Demo | UI/data model is present; autonomous execution is not yet enabled |
+| Payroll | 🟡 Simulation | No automatic real payroll execution |
+| Treasury / revenue split | 🟡 Demo | Dashboard logic/data model; no autonomous settlement |
+| Autonomous agent execution | 🟡 Planned | Intentionally not represented as live functionality |
 
 ## Architecture
 
-```
-User / External AI Agent
+```text
+User / External Agent
+        │
+        ├──────────────► Browser Agent API
         │
         ▼
-Frontend Dashboard (Next.js)
+PayFlow AI Dashboard
         │
-        ▼
-Backend API + Agent Engine
+        ├── Wallet connection (ethers.js)
         │
-        ├── Rule Engine
-        ├── Payroll Scheduler
-        ├── Treasury Manager
-        └── Revenue Splitter
+        ├── Read Arc balance
         │
-        ▼
-Circle Wallets / App Kits
-        │
-        ▼
-Arc Blockchain (USDC)
-```
+        └── User-signed USDC transfer
+                    │
+                    ▼
+               Arc Testnet
 
----
+External HTTP clients
+        │
+        ▼
+Netlify Functions
+        ├── status
+        ├── agents
+        ├── rules
+        ├── payroll simulation
+        ├── treasury demo
+        └── transaction data
+```
 
 ## Tech Stack
 
-- **Blockchain**: Arc Testnet (Chain ID `5042002`)
-- **Stablecoin**: USDC (native gas)
-- **Circle Tools**: Circle Wallets, App Kits, Agent Stack
-- **Frontend**: Next.js, React, Tailwind CSS
-- **Backend**: Node.js / Express
-
----
-
-## Getting Started
-
-```bash
-git clone https://github.com/mayneleo5/payflow-ai.git
-cd payflow-ai
-npm install
-npm run dev
-```
-
----
+- **Blockchain:** Arc Testnet — Chain ID `5042002`
+- **Asset:** USDC / native gas asset on Arc Testnet
+- **Frontend:** HTML, Tailwind CSS, ethers.js v6
+- **Backend:** Netlify Functions
+- **Deployment:** Netlify
 
 ## Agent API
 
-External AI agents (Grok, Claude, GPT, etc.) can already interact with PayFlow:
+Base URL:
 
-- `GET /api/status`
-- `GET /api/agents`
-- `GET /api/rules`
-- `POST /api/payroll/simulate`
-- `GET /api/treasury`
-- `GET /api/transactions`
+`https://payflow-2026.netlify.app/api`
 
----
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api` | API overview |
+| GET | `/api/status` | Platform status |
+| GET | `/api/agents` | Demo agent list |
+| GET | `/api/rules` | Demo payment rules |
+| GET | `/api/payroll` | Payroll demo data |
+| POST | `/api/payroll/simulate` | Run payroll simulation |
+| GET | `/api/treasury` | Treasury demo data |
+| GET | `/api/transactions` | Demo transaction history |
+| GET | `/api/command?q=...` | Natural-language-style demo queries |
+
+### Browser API
+
+When the dashboard is open:
+
+```js
+window.PayFlowAPI.getStatus()
+window.PayFlowAPI.listAgents()
+window.PayFlowAPI.listRules()
+window.PayFlowAPI.command("show treasury")
+```
+
+These browser methods are designed for demonstration and inspection. They do **not** claim autonomous authority over a user's wallet.
+
+## Reproduce the demo
+
+```bash
+git clone https://github.com/mayneleo5/PayFlow-AI.git
+cd PayFlow-AI
+npm install
+npx netlify dev
+```
+
+Then open `http://localhost:8888`.
+
+### Wallet flow
+
+1. Open the dashboard in a browser with an injected EVM wallet.
+2. Connect the wallet.
+3. Approve the Arc Testnet network switch.
+4. Use the dashboard to read the live balance.
+5. For the transfer demo, enter a recipient and amount.
+6. Approve the transaction in the wallet.
+7. Open the returned Arc explorer transaction link.
+
+## Security
+
+- Never commit `.env` files, private keys, seed phrases, or API secrets.
+- The demo does not request or store private keys.
+- Transactions are user-signed through the connected wallet.
+- The HTTP API contains demo/simulation endpoints; it should **not** be treated as an authenticated production payment execution service.
+
+## Hackathon scope
+
+The current submission deliberately distinguishes between **working on-chain wallet functionality** and **simulated automation**. The next implementation milestone is a permissioned agent execution layer with explicit spending limits, approval policies, replay protection, and auditable transaction execution.
 
 ## Roadmap
 
-**Phase 1 – Current**  
-- Wallet connection  
-- Real USDC transfers on Arc  
-- Dashboard + rule configuration  
-- Agent API surface  
+### Phase 1 — Current
+- Wallet connection
+- Arc Testnet balance
+- User-signed transfers
+- Dashboard
+- Browser + HTTP agent API
+- Payroll/rules/treasury demonstrations
 
-**Phase 2**  
-- Real autonomous agent execution  
-- Condition-based & scheduled payments  
-- Automatic revenue splitting  
+### Phase 2
+- Permissioned autonomous execution
+- Scheduled and condition-based payments
+- Spending limits
+- Approval policies
+- On-chain execution records
 
-**Phase 3**  
-- Multi-signature approvals  
-- Cross-chain flows (App Kits / CCTP)  
-- Deeper Agent Stack integration  
-- Risk controls and spending limits  
-
----
-
-## Why Arc?
-
-- USDC as gas → predictable and low costs  
-- Sub-second settlement  
-- Stablecoin-native infrastructure ideal for autonomous financial agents  
-
----
-
-## Team
-
-**PayFlow AI**  
-Built for the Encode Club × Arc Programmable Money Hackathon
-
----
+### Phase 3
+- Multi-signature treasury controls
+- Revenue splitting
+- Cross-chain flows
+- Deeper Circle/Agent Stack integration
+- Production-grade monitoring and risk controls
 
 ## License
 
 MIT
-
-

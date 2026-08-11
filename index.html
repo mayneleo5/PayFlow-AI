@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayFlow AI | Arc Testnet</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            arc: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e' }
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .fade-in { animation: fadeIn .35s ease-out; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    ::-webkit-scrollbar { width:6px; height:6px }
+    ::-webkit-scrollbar-track { background:#1e293b }
+    ::-webkit-scrollbar-thumb { background:#475569; border-radius:3px }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <!-- Top domain bar -->
+  <div class="fixed top-0 left-0 right-0 z-30 bg-slate-900 border-b border-slate-800 px-4 py-1.5 flex items-center justify-between text-xs">
+    <div class="flex items-center gap-2 text-slate-400">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span class="font-medium text-slate-300">PayFlow AI</span>
+      <span class="text-slate-600">•</span>
+      <span>Arc Stablecoin Hackathon Demo</span>
+    </div>
+    <div class="text-slate-500">Testnet only • No real funds</div>
+  </div>
+
+  <div class="flex min-h-screen pt-8">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-[calc(100%-2rem)] top-8 z-20">
+      <div class="p-6 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-violet-600 flex items-center justify-center font-bold text-lg">P</div>
+          <div>
+            <h1 class="font-bold text-lg tracking-tight">PayFlow AI</h1>
+            <p class="text-xs text-slate-400">Arc Testnet • USDC</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <button onclick="showView('dashboard')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-sky-500/10 text-sky-400" data-view="dashboard">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </button>
+        <button onclick="showView('agents')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="agents">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          AI Agents
+        </button>
+        <button onclick="showView('payroll')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="payroll">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          Payroll
+        </button>
+        <button onclick="showView('rules')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="rules">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          Payment Rules
+        </button>
+        <button onclick="showView('treasury')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="treasury">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Treasury
+        </button>
+        <button onclick="showView('send')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="send">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          Send USDC
+        </button>
+        <button onclick="showView('history')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="history">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Transactions
+        </button>
+        <button onclick="showView('wallets')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="wallets">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          Wallets
+        </button>
+        <button onclick="showView('api')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200" data-view="api">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          Agent API
+        </button>
+      </nav>
+
+      <div class="p-4 border-t border-slate-800">
+        <div id="wallet-sidebar" class="px-3 py-2">
+          <button id="connect-btn-sidebar" onclick="connectWallet()" class="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold text-sm transition">
+            Connect Wallet
+          </button>
+          <div id="connected-info" class="hidden">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-slate-900" id="user-avatar">?</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate" id="user-label">Connected</p>
+                <p class="text-xs text-slate-400 truncate font-mono" id="user-address">—</p>
+              </div>
+            </div>
+            <button onclick="disconnectWallet()" class="mt-2 w-full text-xs text-slate-500 hover:text-slate-300">Disconnect</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 ml-64">
+      <header class="sticky top-8 z-10 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-8 py-4 flex items-center justify-between">
+        <div>
+          <h2 id="page-title" class="text-xl font-semibold">Dashboard</h2>
+          <p class="text-sm text-slate-400">Autonomous payments on Arc Testnet</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div id="network-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs">
+            <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+            <span>Not connected</span>
+          </div>
+          <div id="balance-badge" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
+            <span class="text-sm font-semibold text-sky-400" id="header-balance">0.00</span>
+            <span class="text-sm text-slate-400">USDC</span>
+          </div>
+          <a href="https://faucet.circle.com" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition">
+            Get Test USDC
+          </a>
+          <button id="connect-btn-header" onclick="connectWallet()" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold text-sm transition">
+            Connect Wallet
+          </button>
+        </div>
+      </header>
+
+      <div class="p-8">
+        <!-- CONNECT PROMPT -->
+        <div id="connect-prompt" class="mb-6 bg-gradient-to-r from-sky-500/10 to-violet-500/10 border border-sky-500/20 rounded-2xl p-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="font-semibold text-sky-300">Connect a wallet to test on Arc Testnet</h3>
+              <p class="text-sm text-slate-400 mt-1" id="connect-desc">Use MetaMask, Rabby, Coinbase Wallet, or any EVM wallet. The Arc Testnet network will be added automatically.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button onclick="connectWallet()" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold text-sm transition">Connect Wallet</button>
+              <a href="https://faucet.circle.com" target="_blank" class="px-5 py-2.5 rounded-xl border border-slate-600 text-sm font-medium hover:bg-slate-800 transition">Faucet →</a>
+            </div>
+          </div>
+
+          <!-- Mobile-specific instructions (shown only on mobile) -->
+          <div id="mobile-wallet-help" class="hidden mt-5 p-4 rounded-xl bg-slate-900/80 border border-slate-700">
+            <p class="text-sm font-semibold text-amber-300 mb-3">📱 You are on a mobile browser</p>
+            <p class="text-sm text-slate-300 mb-3">Normal Chrome / Samsung Internet cannot inject a wallet. Do this instead:</p>
+            <ol class="text-sm text-slate-400 space-y-2 list-decimal list-inside mb-4">
+              <li>Install <strong class="text-slate-200">MetaMask</strong> from the Play Store / App Store</li>
+              <li>Open the <strong class="text-slate-200">MetaMask app</strong></li>
+              <li>Tap the menu (☰) → <strong class="text-slate-200">Browser</strong></li>
+              <li>In MetaMask Browser, open this same HTML file again (or host it online)</li>
+              <li>Then click <strong class="text-slate-200">Connect Wallet</strong></li>
+            </ol>
+            <div class="flex flex-wrap gap-2">
+              <a href="https://metamask.app.link/dapp/" class="px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium">Open MetaMask</a>
+              <a href="https://metamask.io/download/" target="_blank" class="px-4 py-2 rounded-lg border border-slate-600 text-sm font-medium">Download MetaMask</a>
+            </div>
+            <p class="text-xs text-slate-500 mt-3">Tip: For the best experience, host this file on any free site (Netlify, Vercel, GitHub Pages) and open that URL inside MetaMask Browser.</p>
+          </div>
+
+          <div id="connect-error" class="hidden mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm"></div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="view fade-in space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <p class="text-sm text-slate-400 mb-1">Your Balance</p>
+              <p class="text-2xl font-bold tracking-tight" id="dash-balance">—</p>
+              <p class="text-xs text-slate-500 mt-2">USDC on Arc Testnet</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <p class="text-sm text-slate-400 mb-1">Active Agents</p>
+              <p class="text-2xl font-bold tracking-tight">7</p>
+              <p class="text-xs text-sky-400 mt-2">Demo agents ready</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <p class="text-sm text-slate-400 mb-1">Network</p>
+              <p class="text-2xl font-bold tracking-tight text-sky-400">Arc</p>
+              <p class="text-xs text-slate-400 mt-2">Chain ID 5042002</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <p class="text-sm text-slate-400 mb-1">Next Payroll</p>
+              <p class="text-2xl font-bold tracking-tight">Aug 31</p>
+              <p class="text-xs text-amber-400 mt-2">Demo schedule</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-semibold">Recent Activity (Demo)</h3>
+              </div>
+              <div class="space-y-3" id="recent-activity"></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h3 class="font-semibold mb-5">AI Agent Status</h3>
+              <div class="space-y-4" id="agent-status"></div>
+              <button onclick="showView('agents')" class="mt-5 w-full py-2.5 rounded-xl bg-sky-500/10 text-sky-400 text-sm font-medium hover:bg-sky-500/20 transition">Manage Agents →</button>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button onclick="showView('send')" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </div>
+                <span class="text-sm font-medium">Send USDC</span>
+              </button>
+              <button onclick="showView('payroll')" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <span class="text-sm font-medium">Payroll</span>
+              </button>
+              <button onclick="showView('treasury')" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </div>
+                <span class="text-sm font-medium">Treasury</span>
+              </button>
+              <a href="https://faucet.circle.com" target="_blank" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-sm font-medium">Faucet</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEND USDC -->
+        <div id="view-send" class="view hidden fade-in space-y-6">
+          <div class="max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold text-lg mb-1">Send USDC on Arc Testnet</h3>
+            <p class="text-sm text-slate-400 mb-6">Native USDC transfer. Gas is paid in USDC. Get free test tokens from the faucet first.</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-slate-400 mb-1.5">Recipient address</label>
+                <input id="send-to" type="text" placeholder="0x..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-sky-500" />
+              </div>
+              <div>
+                <label class="block text-sm text-slate-400 mb-1.5">Amount (USDC)</label>
+                <input id="send-amount" type="number" step="0.01" min="0" placeholder="1.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-500" />
+              </div>
+              <button id="send-btn" onclick="sendUSDC()" class="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+                Send USDC
+              </button>
+              <p id="send-status" class="text-sm text-center text-slate-400"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI AGENTS -->
+        <div id="view-agents" class="view hidden fade-in space-y-6">
+          <p class="text-slate-400">Autonomous agents that execute payments based on rules (demo)</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="agents-grid"></div>
+        </div>
+
+        <!-- PAYROLL -->
+        <div id="view-payroll" class="view hidden fade-in space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="font-semibold text-lg">Monthly Payroll (Demo)</h3>
+                <p class="text-sm text-slate-400">Next run: August 31, 2026 • Simulated by Payroll Agent</p>
+              </div>
+              <button onclick="simulatePayroll()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-medium text-sm transition">Simulate Run</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-slate-400 border-b border-slate-800">
+                    <th class="pb-3 font-medium">Employee</th>
+                    <th class="pb-3 font-medium">Role</th>
+                    <th class="pb-3 font-medium">Wallet</th>
+                    <th class="pb-3 font-medium text-right">Amount (USDC)</th>
+                    <th class="pb-3 font-medium text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="payroll-table" class="divide-y divide-slate-800"></tbody>
+              </table>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center">
+              <span class="text-sm text-slate-400">Total monthly payroll</span>
+              <span class="text-lg font-bold text-emerald-400" id="payroll-total">$0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RULES -->
+        <div id="view-rules" class="view hidden fade-in space-y-6">
+          <p class="text-slate-400">Programmable conditions that trigger AI agents (demo)</p>
+          <div class="space-y-3" id="rules-list"></div>
+        </div>
+
+        <!-- TREASURY -->
+        <div id="view-treasury" class="view hidden fade-in space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h3 class="font-semibold mb-5">Revenue Split Allocation</h3>
+              <div class="space-y-4" id="allocation-bars"></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h3 class="font-semibold mb-5">Treasury Health (Demo)</h3>
+              <div class="space-y-5">
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Operations Reserve</span><span>$62,105</span></div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:25%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Payroll Buffer</span><span>$89,430</span></div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:36%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Savings / Growth</span><span>$74,526</span></div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-violet-500 rounded-full" style="width:30%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Tax Reserve</span><span>$22,359</span></div>
+                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:9%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div id="view-history" class="view hidden fade-in space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-800"><h3 class="font-semibold">Transaction History (Demo + Live)</h3></div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-slate-400 border-b border-slate-800 bg-slate-900/50">
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Type</th>
+                    <th class="px-5 py-3 font-medium">Description</th>
+                    <th class="px-5 py-3 font-medium">To / From</th>
+                    <th class="px-5 py-3 font-medium text-right">Amount</th>
+                    <th class="px-5 py-3 font-medium text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tx-table" class="divide-y divide-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- WALLETS -->
+        <div id="view-wallets" class="view hidden fade-in space-y-6">
+          <p class="text-slate-400">Your connected wallet + demo treasury wallets</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="wallets-grid"></div>
+        </div>
+
+        <!-- AGENT API -->
+        <div id="view-api" class="view hidden fade-in space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold text-lg mb-1">Agent API</h3>
+            <p class="text-sm text-slate-400 mb-5">Control PayFlow AI from Grok, Claude, GPT, or any AI agent via the browser <code class="text-sky-400">window.PayFlowAPI</code> object.</p>
+
+            <!-- Natural language command box -->
+            <div class="mb-6">
+              <label class="block text-sm text-slate-400 mb-2">Talk to PayFlow (natural language)</label>
+              <div class="flex gap-2">
+                <input id="agent-cmd" type="text" placeholder="e.g. show balance, list agents, run payroll, list rules..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-500" onkeydown="if(event.key==='Enter')runAgentCommand()" />
+                <button onclick="runAgentCommand()" class="px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold text-sm transition">Run</button>
+              </div>
+              <div id="agent-cmd-result" class="mt-3 p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm font-mono text-slate-300 whitespace-pre-wrap min-h-[60px] hidden"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <button onclick="runApiDemo('status')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">GET /status</p>
+                <p class="text-xs text-slate-400 mt-1">Connection + balance + network</p>
+              </button>
+              <button onclick="runApiDemo('agents')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">GET /agents</p>
+                <p class="text-xs text-slate-400 mt-1">List all AI payment agents</p>
+              </button>
+              <button onclick="runApiDemo('rules')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">GET /rules</p>
+                <p class="text-xs text-slate-400 mt-1">List payment rules</p>
+              </button>
+              <button onclick="runApiDemo('payroll')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">POST /payroll/simulate</p>
+                <p class="text-xs text-slate-400 mt-1">Trigger payroll simulation</p>
+              </button>
+              <button onclick="runApiDemo('treasury')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">GET /treasury</p>
+                <p class="text-xs text-slate-400 mt-1">Treasury allocation & health</p>
+              </button>
+              <button onclick="runApiDemo('tx')" class="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-sky-500/50 text-left transition">
+                <p class="font-medium text-sky-400 text-sm">GET /transactions</p>
+                <p class="text-xs text-slate-400 mt-1">Recent transaction history</p>
+              </button>
+            </div>
+
+            <div id="api-result" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm font-mono text-emerald-400 whitespace-pre-wrap min-h-[120px] max-h-80 overflow-auto">Click an endpoint above to see the response…</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold mb-3">HTTP API — use from Grok / Claude / ChatGPT</h3>
+            <p class="text-sm text-slate-400 mb-3">Any AI agent with web access can call these endpoints. No browser needed.</p>
+            <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-sky-300 overflow-x-auto mb-4">Base: https://payflow-2026.netlify.app/api
+
+GET  /api              → help & status
+GET  /api/status       → platform status
+GET  /api/agents       → list AI payment agents
+GET  /api/rules        → list payment rules
+GET  /api/payroll      → payroll summary
+POST /api/payroll/simulate → run payroll simulation
+GET  /api/treasury     → treasury allocation
+GET  /api/transactions → transaction history
+GET  /api/command?q=list+agents → natural language</pre>
+            <p class="text-sm text-slate-400 mb-3">Example prompt for Claude / ChatGPT / Grok:</p>
+            <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto mb-4">Call this API and summarize the agents:
+https://payflow-2026.netlify.app/api/agents
+
+Then simulate payroll:
+POST https://payflow-2026.netlify.app/api/payroll/simulate</pre>
+            <p class="text-sm text-slate-400">Browser object <code class="text-sky-400">window.PayFlowAPI</code> still works when the page is open.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-xl bg-emerald-500 text-slate-900 font-medium text-sm shadow-lg transform translate-y-24 opacity-0 transition-all duration-300 z-50 max-w-sm"></div>
+
+  <script>
+    // ========== ARC TESTNET CONFIG ==========
+    const ARC_CHAIN_ID = 5042002;
+    const ARC_CHAIN_ID_HEX = '0x4cef52';
+    const ARC_RPCS = [
+      'https://rpc.testnet.arc.io',
+      'https://rpc.testnet.arc.network',
+      'https://rpc.drpc.testnet.arc.network'
+    ];
+    const ARC_EXPLORER = 'https://testnet.arcscan.app';
+
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+
+    // ========== MOCK DATA ==========
+    const agents = [
+      { id:1, name:"Payroll Agent", status:"active", description:"Executes monthly employee payments on schedule", lastAction:"2 days ago", type:"payroll", icon:"💰" },
+      { id:2, name:"Vendor Payer", status:"active", description:"Pays suppliers when invoices become due", lastAction:"4 hours ago", type:"vendor", icon:"📦" },
+      { id:3, name:"Revenue Splitter", status:"running", description:"Automatically allocates incoming USDC", lastAction:"12 min ago", type:"treasury", icon:"📊" },
+      { id:4, name:"Treasury Guardian", status:"active", description:"Monitors balances & enforces allocation rules", lastAction:"1 hour ago", type:"treasury", icon:"🛡️" },
+      { id:5, name:"Subscription Collector", status:"idle", description:"Handles recurring client subscription payments", lastAction:"3 days ago", type:"billing", icon:"🔄" },
+      { id:6, name:"Invoice Settler", status:"active", description:"Pays invoices when approval conditions are met", lastAction:"6 hours ago", type:"vendor", icon:"✅" },
+      { id:7, name:"DAO Distributor", status:"idle", description:"Distributes treasury based on governance votes", lastAction:"1 week ago", type:"dao", icon:"🏛️" },
+    ];
+    const payroll = [
+      { name:"Amina Okonkwo", role:"Lead Engineer", wallet:"0x3f2a...9c1e", amount:8500 },
+      { name:"Carlos Mendes", role:"Product Manager", wallet:"0x8b4d...2a7f", amount:7200 },
+      { name:"Priya Sharma", role:"Smart Contract Dev", wallet:"0x1c9e...4d3b", amount:9000 },
+      { name:"James Wilson", role:"Designer", wallet:"0x6e0f...8a2c", amount:5800 },
+      { name:"Fatima Al-Rashid", role:"Ops Lead", wallet:"0x9d2b...1f5e", amount:6500 },
+      { name:"Liam Chen", role:"Backend Engineer", wallet:"0x4a7c...3e9d", amount:7800 },
+    ];
+    const rules = [
+      { id:1, name:"Monthly Payroll", condition:"Every 31st of the month at 09:00 UTC", action:"Execute full payroll via Payroll Agent", status:"active", agent:"Payroll Agent" },
+      { id:2, name:"Vendor Net-30", condition:"Invoice due date reached + status = approved", action:"Pay invoice amount in USDC", status:"active", agent:"Vendor Payer" },
+      { id:3, name:"Revenue Split", condition:"Any incoming USDC transfer > $100", action:"Split: 25% Ops / 36% Payroll / 30% Growth / 9% Tax", status:"active", agent:"Revenue Splitter" },
+      { id:4, name:"Low Balance Guard", condition:"Payroll buffer < 2× monthly payroll", action:"Pause non-essential payments & alert", status:"active", agent:"Treasury Guardian" },
+      { id:5, name:"Subscription Billing", condition:"Client subscription renewal date", action:"Charge USDC from client wallet", status:"paused", agent:"Subscription Collector" },
+    ];
+    const transactions = [
+      { date:"2026-08-03 09:14", type:"Revenue Split", desc:"Incoming payment allocated", party:"Client → Multi", amount:"+12,500.00", status:"success" },
+      { date:"2026-08-03 08:42", type:"Vendor", desc:"Invoice #INV-2041", party:"0x8b4d...2a7f", amount:"-3,200.00", status:"success" },
+      { date:"2026-08-02 14:20", type:"Vendor", desc:"Cloud services payment", party:"0x1c9e...4d3b", amount:"-890.00", status:"success" },
+      { date:"2026-08-01 11:05", type:"Payroll", desc:"July payroll run", party:"6 employees", amount:"-44,800.00", status:"success" },
+      { date:"2026-07-28 16:33", type:"Revenue Split", desc:"Contract payment received", party:"Acme Corp → Multi", amount:"+28,000.00", status:"success" },
+      { date:"2026-07-25 09:00", type:"Manual", desc:"Treasury top-up", party:"External → Main", amount:"+50,000.00", status:"success" },
+    ];
+    const walletsDemo = [
+      { name:"Main Treasury", address:"0x7a3f...f92c", balance:148420.50, type:"Primary", color:"sky" },
+      { name:"Payroll Buffer", address:"0x2b8e...4c1a", balance:89430.00, type:"Operations", color:"emerald" },
+      { name:"Growth / Savings", address:"0x9d1c...7e3f", balance:74526.00, type:"Reserve", color:"violet" },
+      { name:"Tax Reserve", address:"0x4f6a...2b9d", balance:22359.00, type:"Compliance", color:"amber" },
+    ];
+    const allocations = [
+      { name:"Operations", pct:25, color:"bg-sky-500" },
+      { name:"Payroll Buffer", pct:36, color:"bg-emerald-500" },
+      { name:"Growth / Savings", pct:30, color:"bg-violet-500" },
+      { name:"Tax Reserve", pct:9, color:"bg-amber-500" },
+    ];
+
+    // ========== WALLET LOGIC (more robust) ==========
+    function showConnectError(msg) {
+      const el = document.getElementById('connect-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+    function clearConnectError() {
+      document.getElementById('connect-error').classList.add('hidden');
+    }
+
+    async function addArcNetwork() {
+      // Try multiple RPCs and decimal settings for maximum compatibility
+      const attempts = [
+        {
+          chainId: ARC_CHAIN_ID_HEX,
+          chainName: 'Arc Testnet',
+          nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+          rpcUrls: [ARC_RPCS[0]],
+          blockExplorerUrls: [ARC_EXPLORER]
+        },
+        {
+          chainId: ARC_CHAIN_ID_HEX,
+          chainName: 'Arc Testnet',
+          nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+          rpcUrls: ARC_RPCS,
+          blockExplorerUrls: [ARC_EXPLORER]
+        }
+      ];
+
+      let lastError = null;
+      for (const params of attempts) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [params]
+          });
+          return true;
+        } catch (e) {
+          lastError = e;
+          // If user rejected, stop
+          if (e.code === 4001) throw e;
+        }
+      }
+      throw lastError || new Error('Could not add Arc Testnet');
+    }
+
+    function isMobile() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+             (window.innerWidth <= 768);
+    }
+
+    function showMobileHelp() {
+      const help = document.getElementById('mobile-wallet-help');
+      if (help) help.classList.remove('hidden');
+      document.getElementById('connect-desc').textContent =
+        'On mobile you must open this page inside the MetaMask in-app browser.';
+    }
+
+    // Show mobile help on load if needed
+    if (isMobile() && !window.ethereum) {
+      document.addEventListener('DOMContentLoaded', showMobileHelp);
+      // also run immediately in case DOM already loaded
+      setTimeout(showMobileHelp, 100);
+    }
+
+    async function connectWallet() {
+      clearConnectError();
+      if (!window.ethereum) {
+        if (isMobile()) {
+          showMobileHelp();
+          showConnectError('No wallet detected in this browser. Follow the steps above to open this page inside MetaMask Browser.');
+          showToast('Open this page inside MetaMask app browser', true);
+        } else {
+          showConnectError('No Ethereum wallet detected. Please install MetaMask (https://metamask.io) or another EVM wallet and refresh the page.');
+          showToast('Install MetaMask or another wallet first', true);
+        }
+        return;
+      }
+
+      const btnHeader = document.getElementById('connect-btn-header');
+      const btnSidebar = document.getElementById('connect-btn-sidebar');
+      const originalHeader = btnHeader.textContent;
+      const originalSidebar = btnSidebar.textContent;
+      btnHeader.textContent = 'Connecting…';
+      btnSidebar.textContent = 'Connecting…';
+      btnHeader.disabled = true;
+      btnSidebar.disabled = true;
+
+      try {
+        // 1. Request accounts first
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No account selected');
+        }
+        userAddress = accounts[0];
+
+        // 2. Check current chain
+        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+        console.log('Current chainId:', currentChainId, 'Target:', ARC_CHAIN_ID_HEX);
+
+        if (currentChainId.toLowerCase() !== ARC_CHAIN_ID_HEX.toLowerCase()) {
+          // Try switch
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: ARC_CHAIN_ID_HEX }]
+            });
+          } catch (switchError) {
+            console.log('Switch failed, trying to add network…', switchError);
+            // Chain not added → add it
+            if (switchError.code === 4902 || switchError.code === -32603 || (switchError.message && switchError.message.includes('Unrecognized'))) {
+              await addArcNetwork();
+              // After adding, try switch again
+              try {
+                await window.ethereum.request({
+                  method: 'wallet_switchEthereumChain',
+                  params: [{ chainId: ARC_CHAIN_ID_HEX }]
+                });
+              } catch (e2) {
+                console.warn('Switch after add failed (may already be on it)', e2);
+              }
+            } else if (switchError.code === 4001) {
+              throw new Error('You rejected the network switch. Please approve switching to Arc Testnet.');
+            } else {
+              throw switchError;
+            }
+          }
+        }
+
+        // 3. Create provider + signer
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        // Verify we are on the right chain
+        const network = await provider.getNetwork();
+        console.log('Connected network chainId:', network.chainId.toString());
+
+        updateUIConnected();
+        await refreshBalance();
+        showToast('Connected to Arc Testnet ✓');
+
+        // Listeners (only once)
+        if (!window._payflowListenersAttached) {
+          window.ethereum.on('accountsChanged', (accs) => {
+            if (!accs || accs.length === 0) disconnectWallet();
+            else {
+              userAddress = accs[0];
+              updateUIConnected();
+              refreshBalance();
+            }
+          });
+          window.ethereum.on('chainChanged', (chainId) => {
+            console.log('Chain changed to', chainId);
+            if (chainId.toLowerCase() !== ARC_CHAIN_ID_HEX.toLowerCase()) {
+              showToast('Switched away from Arc Testnet', true);
+              updateUIDisconnected();
+            } else {
+              connectWallet();
+            }
+          });
+          window._payflowListenersAttached = true;
+        }
+      } catch (err) {
+        console.error('Connect error:', err);
+        let msg = err.message || 'Connection failed';
+        if (err.code === 4001) msg = 'You rejected the connection request in your wallet.';
+        showConnectError(msg);
+        showToast(msg, true);
+      } finally {
+        btnHeader.textContent = originalHeader;
+        btnSidebar.textContent = originalSidebar;
+        btnHeader.disabled = false;
+        btnSidebar.disabled = false;
+      }
+    }
+
+    function disconnectWallet() {
+      provider = null;
+      signer = null;
+      userAddress = null;
+      updateUIDisconnected();
+      clearConnectError();
+      showToast('Disconnected');
+    }
+
+    async function refreshBalance() {
+      if (!provider || !userAddress) return;
+      try {
+        const bal = await provider.getBalance(userAddress);
+        // Try both 18 and 6 decimals and pick a sensible display
+        let formatted = Number(ethers.formatUnits(bal, 18));
+        if (formatted > 1e9) {
+          // probably wrong decimals, try 6
+          formatted = Number(ethers.formatUnits(bal, 6));
+        }
+        const display = formatted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+        document.getElementById('header-balance').textContent = display;
+        document.getElementById('dash-balance').textContent = display + ' USDC';
+        document.getElementById('balance-badge').classList.remove('hidden');
+      } catch (e) {
+        console.error('Balance error', e);
+        document.getElementById('dash-balance').textContent = 'Error reading balance';
+      }
+    }
+
+    function updateUIConnected() {
+      document.getElementById('connect-prompt').classList.add('hidden');
+      document.getElementById('connect-btn-header').classList.add('hidden');
+      document.getElementById('connect-btn-sidebar').classList.add('hidden');
+      document.getElementById('connected-info').classList.remove('hidden');
+      document.getElementById('user-address').textContent = shortAddr(userAddress);
+      document.getElementById('user-label').textContent = 'Connected';
+      document.getElementById('user-avatar').textContent = userAddress.slice(2,4).toUpperCase();
+      document.getElementById('network-badge').innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+        <span class="text-emerald-400">Arc Testnet</span>
+      `;
+      document.getElementById('balance-badge').classList.remove('hidden');
+      renderWallets();
+    }
+
+    function updateUIDisconnected() {
+      document.getElementById('connect-prompt').classList.remove('hidden');
+      document.getElementById('connect-btn-header').classList.remove('hidden');
+      document.getElementById('connect-btn-sidebar').classList.remove('hidden');
+      document.getElementById('connected-info').classList.add('hidden');
+      document.getElementById('network-badge').innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+        <span>Not connected</span>
+      `;
+      document.getElementById('balance-badge').classList.add('hidden');
+      document.getElementById('dash-balance').textContent = '—';
+      renderWallets();
+    }
+
+    async function sendUSDC() {
+      if (!signer || !userAddress) {
+        showToast('Connect your wallet first', true);
+        return;
+      }
+      const to = document.getElementById('send-to').value.trim();
+      const amountStr = document.getElementById('send-amount').value.trim();
+      if (!ethers.isAddress(to)) {
+        showToast('Invalid recipient address', true);
+        return;
+      }
+      if (!amountStr || Number(amountStr) <= 0) {
+        showToast('Enter a valid amount', true);
+        return;
+      }
+
+      const btn = document.getElementById('send-btn');
+      const status = document.getElementById('send-status');
+      btn.disabled = true;
+      status.textContent = 'Confirm in your wallet…';
+      status.className = 'text-sm text-center text-amber-400';
+
+      try {
+        // Use 18 decimals for native transfer (gas token)
+        const value = ethers.parseUnits(amountStr, 18);
+        const tx = await signer.sendTransaction({ to, value });
+        status.textContent = 'Transaction sent… waiting for confirmation';
+        status.className = 'text-sm text-center text-sky-400';
+        showToast('Tx submitted: ' + shortAddr(tx.hash));
+
+        await tx.wait();
+        status.innerHTML = `Success! <a href="${ARC_EXPLORER}/tx/${tx.hash}" target="_blank" class="text-sky-400 underline">View on ArcScan</a>`;
+        status.className = 'text-sm text-center text-emerald-400';
+        showToast('USDC sent successfully!');
+        await refreshBalance();
+
+        const tbody = document.getElementById('tx-table');
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-800/30';
+        const now = new Date().toISOString().slice(0,16).replace('T',' ');
+        row.innerHTML = `
+          <td class="px-5 py-3.5 text-slate-400 whitespace-nowrap">${now}</td>
+          <td class="px-5 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400">Live</span></td>
+          <td class="px-5 py-3.5 font-medium">Sent USDC</td>
+          <td class="px-5 py-3.5 text-slate-400 font-mono text-xs">${shortAddr(to)}</td>
+          <td class="px-5 py-3.5 text-right font-semibold">-${amountStr}</td>
+          <td class="px-5 py-3.5 text-right"><a href="${ARC_EXPLORER}/tx/${tx.hash}" target="_blank" class="text-xs text-emerald-400 underline">success</a></td>
+        `;
+        tbody.insertBefore(row, tbody.firstChild);
+      } catch (err) {
+        console.error(err);
+        const msg = err.reason || err.shortMessage || err.message || 'Transaction failed';
+        status.textContent = msg;
+        status.className = 'text-sm text-center text-rose-400';
+        showToast(msg, true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function shortAddr(a) {
+      if (!a) return '—';
+      return a.slice(0,6) + '…' + a.slice(-4);
+    }
+
+    // ========== RENDER ==========
+    function renderDashboard() {
+      document.getElementById('recent-activity').innerHTML = transactions.slice(0,5).map(tx => `
+        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-800/50 transition">
+          <div class="w-10 h-10 rounded-lg ${tx.amount.startsWith('+') ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} flex items-center justify-center text-lg">
+            ${tx.amount.startsWith('+') ? '↓' : '↑'}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">${tx.desc}</p>
+            <p class="text-xs text-slate-400">${tx.date} • ${tx.type}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold ${tx.amount.startsWith('+') ? 'text-emerald-400' : 'text-slate-200'}">${tx.amount} USDC</p>
+            <p class="text-xs text-emerald-400">${tx.status}</p>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('agent-status').innerHTML = agents.slice(0,4).map(a => `
+        <div class="flex items-center gap-3">
+          <span class="text-xl">${a.icon}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">${a.name}</p>
+            <p class="text-xs text-slate-400">${a.lastAction}</p>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full ${a.status==='running'?'bg-sky-500/20 text-sky-400':a.status==='active'?'bg-emerald-500/20 text-emerald-400':'bg-slate-700 text-slate-400'}">${a.status}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderAgents() {
+      document.getElementById('agents-grid').innerHTML = agents.map(a => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">${a.icon}</span>
+              <div>
+                <h4 class="font-semibold">${a.name}</h4>
+                <p class="text-xs text-slate-400 capitalize">${a.type}</p>
+              </div>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full ${a.status==='running'?'bg-sky-500/20 text-sky-400':a.status==='active'?'bg-emerald-500/20 text-emerald-400':'bg-slate-700 text-slate-400'}">${a.status}</span>
+          </div>
+          <p class="text-sm text-slate-400 mb-4">${a.description}</p>
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span>Last action: ${a.lastAction}</span>
+            <button onclick="showToast('Agent configuration UI coming in Phase 2 (demo)')" class="text-sky-400 hover:text-sky-300 font-medium">Configure</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPayroll() {
+      let total = 0;
+      document.getElementById('payroll-table').innerHTML = payroll.map(p => {
+        total += p.amount;
+        return `<tr class="hover:bg-slate-800/30">
+          <td class="py-3.5 pr-4 font-medium">${p.name}</td>
+          <td class="py-3.5 pr-4 text-slate-400">${p.role}</td>
+          <td class="py-3.5 pr-4 font-mono text-xs text-slate-400">${p.wallet}</td>
+          <td class="py-3.5 pr-4 text-right font-semibold">$${p.amount.toLocaleString()}</td>
+          <td class="py-3.5 text-right"><span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Scheduled</span></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('payroll-total').textContent = '$' + total.toLocaleString();
+    }
+
+    function renderRules() {
+      document.getElementById('rules-list').innerHTML = rules.map(r => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <h4 class="font-semibold">${r.name}</h4>
+              <span class="text-xs px-2 py-0.5 rounded-full ${r.status==='active'?'bg-emerald-500/20 text-emerald-400':'bg-amber-500/20 text-amber-400'}">${r.status}</span>
+            </div>
+            <p class="text-sm text-slate-400 mb-1"><span class="text-slate-500">When:</span> ${r.condition}</p>
+            <p class="text-sm text-slate-400"><span class="text-slate-500">Then:</span> ${r.action}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-500">Agent: ${r.agent}</span>
+            <button onclick="showToast('Rule editor coming in Phase 2 — demo only')" class="text-sm text-sky-400 hover:text-sky-300 font-medium">Edit</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTreasury() {
+      document.getElementById('allocation-bars').innerHTML = allocations.map(a => `
+        <div>
+          <div class="flex justify-between text-sm mb-1.5"><span>${a.name}</span><span class="font-medium">${a.pct}%</span></div>
+          <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div class="h-full ${a.color} rounded-full" style="width:${a.pct}%"></div></div>
+        </div>
+      `).join('');
+    }
+
+    function renderHistory() {
+      document.getElementById('tx-table').innerHTML = transactions.map(tx => `
+        <tr class="hover:bg-slate-800/30">
+          <td class="px-5 py-3.5 text-slate-400 whitespace-nowrap">${tx.date}</td>
+          <td class="px-5 py-3.5"><span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">${tx.type}</span></td>
+          <td class="px-5 py-3.5 font-medium">${tx.desc}</td>
+          <td class="px-5 py-3.5 text-slate-400 font-mono text-xs">${tx.party}</td>
+          <td class="px-5 py-3.5 text-right font-semibold ${tx.amount.startsWith('+')?'text-emerald-400':''}">${tx.amount}</td>
+          <td class="px-5 py-3.5 text-right"><span class="text-xs text-emerald-400">${tx.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderWallets() {
+      let html = '';
+      if (userAddress) {
+        html += `
+          <div class="bg-slate-900 border border-sky-500/40 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-semibold text-sky-400">Your Connected Wallet</h4>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">${userAddress}</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400">Live</span>
+            </div>
+            <p class="text-2xl font-bold tracking-tight" id="wallet-live-balance">Loading…</p>
+            <p class="text-xs text-slate-400 mt-1">USDC on Arc Testnet</p>
+            <div class="mt-4 flex gap-2">
+              <button onclick="showView('send')" class="flex-1 py-2 rounded-lg bg-sky-500 text-slate-900 text-sm font-semibold hover:bg-sky-400 transition">Send</button>
+              <a href="${ARC_EXPLORER}/address/${userAddress}" target="_blank" class="flex-1 py-2 rounded-lg bg-slate-800 text-sm font-medium hover:bg-slate-700 transition text-center">Explorer</a>
+            </div>
+          </div>
+        `;
+        if (provider) {
+          provider.getBalance(userAddress).then(bal => {
+            let formatted = Number(ethers.formatUnits(bal, 18));
+            if (formatted > 1e9) formatted = Number(ethers.formatUnits(bal, 6));
+            const el = document.getElementById('wallet-live-balance');
+            if (el) el.textContent = formatted.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:4}) + ' USDC';
+          });
+        }
+      }
+      const colorMap = {
+        sky: 'bg-sky-500/20 text-sky-400',
+        emerald: 'bg-emerald-500/20 text-emerald-400',
+        violet: 'bg-violet-500/20 text-violet-400',
+        amber: 'bg-amber-500/20 text-amber-400'
+      };
+      html += walletsDemo.map(w => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="font-semibold">${w.name}</h4>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">${w.address}</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full ${colorMap[w.color] || 'bg-slate-700 text-slate-300'}">${w.type}</span>
+          </div>
+          <p class="text-2xl font-bold tracking-tight">$${w.balance.toLocaleString('en-US',{minimumFractionDigits:2})}</p>
+          <p class="text-xs text-slate-400 mt-1">Demo balance</p>
+        </div>
+      `).join('');
+      document.getElementById('wallets-grid').innerHTML = html;
+    }
+
+    // ========== NAV ==========
+    const titles = { dashboard:'Dashboard', agents:'AI Agents', payroll:'Payroll', rules:'Payment Rules', treasury:'Treasury', history:'Transactions', wallets:'Wallets', send:'Send USDC', api:'Agent API' };
+
+    function showView(view) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      const el = document.getElementById('view-' + view);
+      if (el) { el.classList.remove('hidden'); el.classList.add('fade-in'); }
+      document.getElementById('page-title').textContent = titles[view] || view;
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.view === view) {
+          btn.classList.add('bg-sky-500/10','text-sky-400');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('bg-sky-500/10','text-sky-400');
+          btn.classList.add('text-slate-400');
+        }
+      });
+      if (view==='dashboard') renderDashboard();
+      if (view==='agents') renderAgents();
+      if (view==='payroll') renderPayroll();
+      if (view==='rules') renderRules();
+      if (view==='treasury') renderTreasury();
+      if (view==='history') renderHistory();
+      if (view==='wallets') renderWallets();
+    }
+
+    function simulatePayroll() {
+      showToast('Payroll simulation started — 6 payments queued…');
+      setTimeout(() => showToast('Payroll completed successfully! $44,800 USDC (demo)'), 1600);
+      return { ok: true, message: 'Payroll simulation started', totalUSDC: 44800, employees: payroll.length };
+    }
+
+    function showToast(msg, isError=false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `fixed bottom-6 right-6 px-5 py-3 rounded-xl font-medium text-sm shadow-lg transform transition-all duration-300 z-50 max-w-sm ${isError ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-slate-900'}`;
+      t.classList.remove('translate-y-24','opacity-0');
+      setTimeout(() => t.classList.add('translate-y-24','opacity-0'), 4000);
+    }
+
+    // ========== PAYFLOW API (for AI agents: Grok, Claude, GPT, etc.) ==========
+    window.PayFlowAPI = {
+      version: '1.0.0',
+      network: { name: 'Arc Testnet', chainId: 5042002, explorer: ARC_EXPLORER },
+
+      async getStatus() {
+        let balance = null;
+        if (provider && userAddress) {
+          try {
+            const bal = await provider.getBalance(userAddress);
+            let n = Number(ethers.formatUnits(bal, 18));
+            if (n > 1e9) n = Number(ethers.formatUnits(bal, 6));
+            balance = n;
+          } catch (e) {}
+        }
+        return {
+          connected: !!userAddress,
+          address: userAddress || null,
+          balanceUSDC: balance,
+          network: 'Arc Testnet',
+          chainId: 5042002,
+          agentsActive: agents.filter(a => a.status === 'active' || a.status === 'running').length,
+          rulesActive: rules.filter(r => r.status === 'active').length
+        };
+      },
+
+      async getBalance() {
+        if (!provider || !userAddress) return { error: 'Wallet not connected' };
+        const bal = await provider.getBalance(userAddress);
+        let n = Number(ethers.formatUnits(bal, 18));
+        if (n > 1e9) n = Number(ethers.formatUnits(bal, 6));
+        return { address: userAddress, balanceUSDC: n, network: 'Arc Testnet' };
+      },
+
+      listAgents() {
+        return agents.map(a => ({ id: a.id, name: a.name, status: a.status, type: a.type, description: a.description, lastAction: a.lastAction }));
+      },
+
+      listRules() {
+        return rules.map(r => ({ id: r.id, name: r.name, status: r.status, condition: r.condition, action: r.action, agent: r.agent }));
+      },
+
+      listTransactions() {
+        return transactions;
+      },
+
+      getPayroll() {
+        const total = payroll.reduce((s, p) => s + p.amount, 0);
+        return { employees: payroll, totalUSDC: total, nextRun: '2026-08-31' };
+      },
+
+      getTreasury() {
+        return {
+          allocations: allocations,
+          totals: { operations: 62105, payrollBuffer: 89430, growth: 74526, tax: 22359 }
+        };
+      },
+
+      simulatePayroll() {
+        return simulatePayroll();
+      },
+
+      // Natural language helper
+      async command(text) {
+        const t = (text || '').toLowerCase().trim();
+        if (!t) return { error: 'Empty command' };
+        if (t.includes('balance') || t.includes('status') || t.includes('connected')) return this.getStatus();
+        if (t.includes('agent')) return this.listAgents();
+        if (t.includes('rule')) return this.listRules();
+        if (t.includes('payroll') || t.includes('pay employees')) return this.simulatePayroll();
+        if (t.includes('treasury') || t.includes('allocation')) return this.getTreasury();
+        if (t.includes('transaction') || t.includes('history') || t.includes('tx')) return this.listTransactions();
+        if (t.includes('help')) return { commands: ['show balance', 'list agents', 'list rules', 'run payroll', 'show treasury', 'list transactions'] };
+        return { error: 'Unknown command. Try: show balance, list agents, list rules, run payroll, show treasury' };
+      }
+    };
+
+    async function runApiDemo(which) {
+      const el = document.getElementById('api-result');
+      el.textContent = 'Loading…';
+      let result;
+      try {
+        if (which === 'status') result = await PayFlowAPI.getStatus();
+        else if (which === 'agents') result = PayFlowAPI.listAgents();
+        else if (which === 'rules') result = PayFlowAPI.listRules();
+        else if (which === 'payroll') result = PayFlowAPI.simulatePayroll();
+        else if (which === 'treasury') result = PayFlowAPI.getTreasury();
+        else if (which === 'tx') result = PayFlowAPI.listTransactions();
+        else result = { error: 'Unknown endpoint' };
+        el.textContent = JSON.stringify(result, null, 2);
+      } catch (e) {
+        el.textContent = JSON.stringify({ error: e.message }, null, 2);
+      }
+    }
+
+    async function runAgentCommand() {
+      const input = document.getElementById('agent-cmd');
+      const out = document.getElementById('agent-cmd-result');
+      const text = input.value.trim();
+      if (!text) return;
+      out.classList.remove('hidden');
+      out.textContent = 'Thinking…';
+      try {
+        const result = await PayFlowAPI.command(text);
+        out.textContent = JSON.stringify(result, null, 2);
+      } catch (e) {
+        out.textContent = JSON.stringify({ error: e.message }, null, 2);
+      }
+    }
+
+    // Init
+    renderDashboard();
+    renderPayroll();
+    renderRules();
+    renderTreasury();
+    renderHistory();
+    renderWallets();
+
+    // Auto reconnect if already authorized
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' }).then(accs => {
+        if (accs && accs.length > 0) {
+          connectWallet();
+        }
+      }).catch(()=>{});
+    }
+  </script>
+</body>
+</html>

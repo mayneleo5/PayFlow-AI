@@ -271,9 +271,9 @@
         
         // ========== REAL REVENUE SPLIT ==========
 const REVENUE_SPLIT_RECIPIENTS = [
-  { name: "Operations", percentage: 40, address: "0x2c84b594f5ec50245504a3a2127addc22830c3d3" },
-  { name: "Growth",     percentage: 30, address: "0x009ae9e5b91b156d68fb0ba47ec55c031f6ee08a" },
-  { name: "Treasury",   percentage: 30, address: "0xab105275274a19c88350b2e902a87011511564cb" }
+  { name: "Operations", percentage: 40, address: "0x009ae9e5b91b156d68fb0ba47ec55c031f6ee08a" }, // replace with full real addresses
+  { name: "Growth",     percentage: 30, address: "0xab105275274a19c88350b2e902a87011511564cb" },
+  { name: "Treasury",   percentage: 30, address: "0x634fe20eaa007339e3157ba6ecf983c7a8a3470a" }
 ];
 
 async function executeRevenueSplit() {
@@ -311,10 +311,14 @@ async function executeRevenueSplit() {
         value: share
       });
 
-      txHashes.push({ name: recipient.name, hash: tx.hash, percentage: recipient.percentage });
+      txHashes.push({
+        name: recipient.name,
+        hash: tx.hash,
+        percentage: recipient.percentage
+      });
     }
 
-    status.innerHTML = `All transactions submitted!`;
+    status.innerHTML = "All transactions submitted!";
     status.className = "text-sm text-emerald-400";
 
     results.classList.remove("hidden");

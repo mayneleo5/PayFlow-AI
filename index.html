@@ -268,6 +268,81 @@
             </div>
           </div>
         </div>
+        
+        // ========== REAL REVENUE SPLIT ==========
+const REVENUE_SPLIT_RECIPIENTS = [
+  { name: "Operations", percentage: 40, address: "0x0000000000000000000000000000000000000001" },
+  { name: "Growth",     percentage: 30, address: "0x0000000000000000000000000000000000000002" },
+  { name: "Treasury",   percentage: 30, address: "0x0000000000000000000000000000000000000003" }
+];
+
+async function executeRevenueSplit() {
+  if (!signer || !userAddress) {
+    showToast("Connect your wallet first", true);
+    return;
+  }
+
+  const amountStr = document.getElementById("split-amount").value.trim();
+  if (!amountStr || Number(amountStr) <= 0) {
+    showToast("Enter a valid amount", true);
+    return;
+  }
+
+  const btn = document.getElementById("execute-split-btn");
+  const status = document.getElementById("split-status");
+  const results = document.getElementById("split-results");
+
+  btn.disabled = true;
+  status.textContent = "Confirm each transaction in your wallet…";
+  status.className = "text-sm text-amber-400";
+  results.classList.add("hidden");
+  results.innerHTML = "";
+
+  try {
+    const total = ethers.parseUnits(amountStr, 18);
+    const txHashes = [];
+
+    for (const recipient of REVENUE_SPLIT_RECIPIENTS) {
+      const share = (total * BigInt(recipient.percentage)) / 100n;
+      status.textContent = `Sending ${recipient.percentage}% to ${recipient.name}…`;
+
+      const tx = await signer.sendTransaction({
+        to: recipient.address,
+        value: share
+      });
+
+      txHashes.push({ name: recipient.name, hash: tx.hash, percentage: recipient.percentage });
+    }
+
+    status.innerHTML = `All transactions submitted!`;
+    status.className = "text-sm text-emerald-400";
+
+    results.classList.remove("hidden");
+    results.innerHTML = txHashes.map(t => `
+      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+        <span class="text-sm">\( {t.name} ( \){t.percentage}%)</span>
+        <a href="\( {ARC_EXPLORER}/tx/ \){t.hash}" target="_blank" class="text-xs text-sky-400 underline font-mono">
+          \( {t.hash.slice(0,10)}… \){t.hash.slice(-6)}
+        </a>
+      </div>
+    `).join("");
+
+    showToast("Revenue Split completed!");
+    await refreshBalance();
+
+  } catch (err) {
+    console.error(err);
+    const msg = err.reason || err.shortMessage || err.message || "Transaction failed";
+    status.textContent = msg;
+    status.className = "text-sm text-rose-400";
+    showToast(msg, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+    address: "0x2c84b594f5ec50245504a3a2127addc22830c3d3"
+address: "0x009ae9e5b91b156d68fb0ba47ec55c031f6ee08a"
+address: "0xab105275274a19c88350b2e902a87011511564cb"
 
         <!-- AI AGENTS -->
         <div id="view-agents" class="view hidden fade-in space-y-6">
@@ -311,37 +386,65 @@
           <p class="text-slate-400">Programmable conditions that trigger AI agents (demo)</p>
           <div class="space-y-3" id="rules-list"></div>
         </div>
-
-        <!-- TREASURY -->
-        <div id="view-treasury" class="view hidden fade-in space-y-6">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <h3 class="font-semibold mb-5">Revenue Split Allocation</h3>
-              <div class="space-y-4" id="allocation-bars"></div>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <h3 class="font-semibold mb-5">Treasury Health (Demo)</h3>
-              <div class="space-y-5">
-                <div>
-                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Operations Reserve</span><span>$62,105</span></div>
-                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:25%"></div></div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Payroll Buffer</span><span>$89,430</span></div>
-                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:36%"></div></div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Savings / Growth</span><span>$74,526</span></div>
-                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-violet-500 rounded-full" style="width:30%"></div></div>
-                </div>
-                <div>
-                  <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Tax Reserve</span><span>$22,359</span></div>
-                  <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:9%"></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
+        
+<!-- TREASURY -->
+<div id="view-treasury" class="view hidden fade-in space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <h3 class="font-semibold mb-5">Revenue Split Allocation</h3>
+      <div class="space-y-4" id="allocation-bars"></div>
+    </div>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <h3 class="font-semibold mb-5">Treasury Health (Demo)</h3>
+      <div class="space-y-5">
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Operations Reserve</span><span>$62,105</span></div>
+          <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-sky-500 rounded-full" style="width:25%"></div></div>
         </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Payroll Buffer</span><span>$89,430</span></div>
+          <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:36%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Savings / Growth</span><span>$74,526</span></div>
+          <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-violet-500 rounded-full" style="width:30%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Tax Reserve</span><span>$22,359</span></div>
+          <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width:9%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REAL REVENUE SPLIT -->
+  <div class="bg-slate-900 border border-sky-500/30 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-semibold text-lg text-sky-300">Execute Revenue Split (Live)</h3>
+        <p class="text-sm text-slate-400 mt-1">Sends real USDC on Arc Testnet according to allocation rules</p>
+      </div>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400">On-chain</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div>
+        <label class="block text-sm text-slate-400 mb-1.5">Amount to split (USDC)</label>
+        <input id="split-amount" type="number" step="0.01" min="0.01" value="5"
+               class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sky-500" />
+      </div>
+      <div class="md:col-span-2 flex items-end">
+        <button id="execute-split-btn" onclick="executeRevenueSplit()"
+                class="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold transition">
+          Execute Revenue Split
+        </button>
+      </div>
+    </div>
+
+    <div id="split-status" class="text-sm text-slate-400"></div>
+    <div id="split-results" class="mt-4 space-y-2 hidden"></div>
+  </div>
+</div>
 
         <!-- HISTORY -->
         <div id="view-history" class="view hidden fade-in space-y-6">

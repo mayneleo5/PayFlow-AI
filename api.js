@@ -52,7 +52,6 @@ const headers = {
 };
 
 exports.handler = async (event) => {
-  // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 204, headers, body: "" };
   }
@@ -60,7 +59,6 @@ exports.handler = async (event) => {
   const path = (event.path || "").replace(/^\/\.netlify\/functions\/api/, "").replace(/^\/api/, "") || "/";
   const method = event.httpMethod;
 
-  // GET /
   if (path === "/" || path === "") {
     return {
       statusCode: 200,
@@ -85,7 +83,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET /status
   if (path === "/status" && method === "GET") {
     return {
       statusCode: 200,
@@ -103,7 +100,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET /agents
   if (path === "/agents" && method === "GET") {
     return {
       statusCode: 200,
@@ -123,7 +119,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET /rules
   if (path === "/rules" && method === "GET") {
     return {
       statusCode: 200,
@@ -143,65 +138,40 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET /payroll
   if (path === "/payroll" && method === "GET") {
     const total = payroll.reduce((s, p) => s + p.amount, 0);
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(
-        {
-          employees: payroll,
-          totalUSDC: total,
-          nextRun: "2026-08-31",
-        },
-        null,
-        2
-      ),
+      body: JSON.stringify({ employees: payroll, totalUSDC: total, nextRun: "2026-08-31" }, null, 2),
     };
   }
 
-  // POST /payroll/simulate
   if (path === "/payroll/simulate" && method === "POST") {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(
-        {
-          ok: true,
-          message: "Payroll simulation started",
-          totalUSDC: 44800,
-          employees: payroll.length,
-          note: "This is a simulation. Real autonomous execution is on the roadmap.",
-        },
-        null,
-        2
-      ),
+      body: JSON.stringify({
+        ok: true,
+        message: "Payroll simulation started",
+        totalUSDC: 44800,
+        employees: payroll.length,
+        note: "This is a simulation. Real autonomous execution is on the roadmap.",
+      }, null, 2),
     };
   }
 
-  // GET /treasury
   if (path === "/treasury" && method === "GET") {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(
-        {
-          allocations,
-          totals: {
-            operations: 62105,
-            payrollBuffer: 89430,
-            growth: 74526,
-            tax: 22359,
-          },
-        },
-        null,
-        2
-      ),
+      body: JSON.stringify({
+        allocations,
+        totals: { operations: 62105, payrollBuffer: 89430, growth: 74526, tax: 22359 },
+      }, null, 2),
     };
   }
 
-  // GET /transactions
   if (path === "/transactions" && method === "GET") {
     return {
       statusCode: 200,
@@ -210,7 +180,6 @@ exports.handler = async (event) => {
     };
   }
 
-  // GET /command?q=...
   if (path === "/command" && method === "GET") {
     const q = (event.queryStringParameters?.q || "").toLowerCase().trim();
     let result;
@@ -237,46 +206,22 @@ exports.handler = async (event) => {
       result = transactions;
     } else if (q.includes("help")) {
       result = {
-        commands: [
-          "show balance",
-          "list agents",
-          "list rules",
-          "run payroll",
-          "show treasury",
-          "list transactions",
-        ],
+        commands: ["show balance", "list agents", "list rules", "run payroll", "show treasury", "list transactions"],
       };
     } else {
-      result = {
-        error: "Unknown command. Try: show balance, list agents, list rules, run payroll, show treasury",
-      };
+      result = { error: "Unknown command. Try: show balance, list agents, list rules, run payroll, show treasury" };
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(result, null, 2),
-    };
+    return { statusCode: 200, headers, body: JSON.stringify(result, null, 2) };
   }
 
-  // 404
   return {
     statusCode: 404,
     headers,
     body: JSON.stringify({
       error: "Not found",
       path,
-      available: [
-        "/api",
-        "/api/status",
-        "/api/agents",
-        "/api/rules",
-        "/api/payroll",
-        "/api/payroll/simulate",
-        "/api/treasury",
-        "/api/transactions",
-        "/api/command?q=...",
-      ],
+      available: ["/api", "/api/status", "/api/agents", "/api/rules", "/api/payroll", "/api/payroll/simulate", "/api/treasury", "/api/transactions", "/api/command?q=..."],
     }, null, 2),
   };
 };

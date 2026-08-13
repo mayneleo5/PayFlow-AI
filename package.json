@@ -1,7 +1,7 @@
 {
   "name": "payflow-ai",
-  "version": "1.0.0",
-  "description": "Autonomous treasury & payment automation platform built on Arc",
+  "version": "1.1.0",
+  "description": "Autonomous treasury & payment automation platform built on Arc - ready for Circle App Kits and Agent Stack",
   "private": true,
   "scripts": {
     "dev": "npx netlify dev",
@@ -14,7 +14,10 @@
     "defi",
     "treasury",
     "payments",
-    "encode-club"
+    "encode-club",
+    "circle",
+    "app-kits",
+    "agent-stack"
   ],
   "author": "PayFlow AI",
   "license": "MIT",
